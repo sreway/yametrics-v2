@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YaMetrics</title>
+</head>
+<body>
+{{range $idx, $m := .}}
+    <p>{{$m.ID}}: {{$m.GetStrValue}}</p>
+{{end}}
+</body>
+</html>
