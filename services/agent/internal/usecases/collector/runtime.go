@@ -1,0 +1,45 @@
+package collector
+
+import (
+	"runtime"
+)
+
+func (uc *UseCase) SetRuntimeStats() {
+	rtm := new(runtime.MemStats)
+	runtime.ReadMemStats(rtm)
+	uc.repo.RLock()
+	defer uc.repo.RUnlock()
+
+	uc.repo.AddGaugeWithoutLock("Alloc", float64(rtm.Alloc))
+	uc.repo.AddGaugeWithoutLock("BuckHashSys", float64(rtm.BuckHashSys))
+	uc.repo.AddGaugeWithoutLock("Frees", float64(rtm.Frees))
+	uc.repo.AddGaugeWithoutLock("GCCPUFraction", rtm.GCCPUFraction)
+	uc.repo.AddGaugeWithoutLock("GCSys", float64(rtm.GCSys))
+	uc.repo.AddGaugeWithoutLock("HeapAlloc", float64(rtm.HeapAlloc))
+	uc.repo.AddGaugeWithoutLock("HeapIdle", float64(rtm.HeapIdle))
+	uc.repo.AddGaugeWithoutLock("HeapInuse", float64(rtm.HeapInuse))
+	uc.repo.AddGaugeWithoutLock("HeapObjects", float64(rtm.HeapObjects))
+	uc.repo.AddGaugeWithoutLock("HeapReleased", float64(rtm.HeapReleased))
+	uc.repo.AddGaugeWithoutLock("HeapSys", float64(rtm.HeapSys))
+	uc.repo.AddGaugeWithoutLock("HeapSys", float64(rtm.HeapSys))
+	uc.repo.AddGaugeWithoutLock("LastGC", float64(rtm.LastGC))
+	uc.repo.AddGaugeWithoutLock("Lookups", float64(rtm.Lookups))
+	uc.repo.AddGaugeWithoutLock("MCacheInuse", float64(rtm.MCacheInuse))
+	uc.repo.AddGaugeWithoutLock("MCacheSys", float64(rtm.MCacheSys))
+	uc.repo.AddGaugeWithoutLock("MSpanInuse", float64(rtm.MSpanInuse))
+	uc.repo.AddGaugeWithoutLock("MSpanSys", float64(rtm.MSpanSys))
+	uc.repo.AddGaugeWithoutLock("Mallocs", float64(rtm.Mallocs))
+	uc.repo.AddGaugeWithoutLock("Mallocs", float64(rtm.Mallocs))
+	uc.repo.AddGaugeWithoutLock("NextGC", float64(rtm.NextGC))
+	uc.repo.AddGaugeWithoutLock("NumForcedGC", float64(rtm.NumForcedGC))
+	uc.repo.AddGaugeWithoutLock("NumGC", float64(rtm.NumGC))
+	uc.repo.AddGaugeWithoutLock("OtherSys", float64(rtm.OtherSys))
+	uc.repo.AddGaugeWithoutLock("PauseTotalNs", float64(rtm.PauseTotalNs))
+	uc.repo.AddGaugeWithoutLock("StackInuse", float64(rtm.StackInuse))
+	uc.repo.AddGaugeWithoutLock("StackSys", float64(rtm.StackSys))
+	uc.repo.AddGaugeWithoutLock("StackSys", float64(rtm.StackSys))
+	uc.repo.AddGaugeWithoutLock("Sys", float64(rtm.Sys))
+	uc.repo.AddGaugeWithoutLock("TotalAlloc", float64(rtm.TotalAlloc))
+	uc.repo.AddCounterWithoutLock("PollCount", 1)
+	uc.repo.AddGaugeWithoutLock("RandomValue", float64(rtm.TotalAlloc))
+}
