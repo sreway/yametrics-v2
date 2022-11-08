@@ -11,8 +11,8 @@ import (
 )
 
 type UseCase struct {
-	secretKey string
 	storage   storage.Storage
+	secretKey string
 }
 
 func (uc *UseCase) Add(ctx context.Context, m *metric.Metric) error {

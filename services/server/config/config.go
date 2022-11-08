@@ -27,22 +27,22 @@ var (
 
 type (
 	Config struct {
-		HTTP          HTTPConfig
-		MemoryStorage MemoryStorageConfig
-		Postgres      PostgresConfig
 		SecretKey     string
+		Postgres      PostgresConfig
+		MemoryStorage MemoryStorageConfig
+		HTTP          HTTPConfig
 	}
 
 	HTTPConfig struct {
 		Address       string `env:"ADDRESS"`
-		CompressLevel int
 		CompressTypes []string
+		CompressLevel int
 	}
 
 	MemoryStorageConfig struct {
-		StoreInterval time.Duration `env:"STORE_INTERVAL"`
 		StoreFile     string        `env:"STORE_FILE"`
 		Restore       bool          `env:"RESTORE"`
+		StoreInterval time.Duration `env:"STORE_INTERVAL"`
 	}
 
 	PostgresConfig struct {

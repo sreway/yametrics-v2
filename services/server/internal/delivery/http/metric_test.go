@@ -143,9 +143,9 @@ func TestDelivery_GetMetric(t *testing.T) {
 	}
 
 	tests := []struct {
+		args   args
 		name   string
 		fields fields
-		args   args
 		want   want
 	}{
 		{
