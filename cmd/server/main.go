@@ -2,9 +2,10 @@ package main
 
 import (
 	"flag"
+	"log"
+
 	"github.com/sreway/yametrics-v2/services/server/config"
 	"github.com/sreway/yametrics-v2/services/server/server"
-	"log"
 )
 
 func main() {
