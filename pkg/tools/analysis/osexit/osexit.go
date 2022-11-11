@@ -21,26 +21,18 @@ func run(pass *analysis.Pass) (interface{}, error) {
 		if pass.Pkg.Name() != "main" {
 			continue
 		}
-		ast.Inspect(file, func(n ast.Node) bool {
-			if call, ok := n.(*ast.CallExpr); ok {
-				var (
-					id *ast.Ident
-					p  string
-				)
-				switch fun := call.Fun.(type) {
-				case *ast.Ident:
-					id = fun
-				case *ast.SelectorExpr:
-					id = fun.Sel
-					p = fmt.Sprintf("%v", fun.X)
-				}
 
-				if id != nil && id.Name == "Exit" && p == "os" {
-					pass.Report(analysis.Diagnostic{
-						Pos:     call.Lparen,
-						Message: "Found call of os.Exit on main package",
-					})
-				}
+		if len(file.Scope.Objects) != 1 {
+			continue
+		}
+
+		ast.Inspect(file, func(n ast.Node) bool {
+			if fun, ok := n.(*ast.SelectorExpr); ok && fun.Sel.Name == "Exit" &&
+				fmt.Sprintf("%v", fun.X) == "os" {
+				pass.Report(analysis.Diagnostic{
+					Pos:     fun.Pos(),
+					Message: "Found call of os.Exit on main package",
+				})
 			}
 			return true
 		})
