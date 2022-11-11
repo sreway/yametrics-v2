@@ -13,8 +13,8 @@ import (
 )
 
 type UseCase struct {
-	secretKey string
 	repo      storage.MemoryStorage
+	secretKey string
 }
 
 func (uc *UseCase) Collect(ctx context.Context, wg *sync.WaitGroup, polling time.Duration) {

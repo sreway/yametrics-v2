@@ -20,12 +20,12 @@ var (
 
 type (
 	Config struct {
-		PollInterval     time.Duration `env:"POLL_INTERVAL"`
-		ReportInterval   time.Duration `env:"REPORT_INTERVAL"`
-		ServerAddress    string        `env:"ADDRESS"`
 		MetricsEnpoint   string
 		ServerHTTPScheme string
-		Key              string `env:"KEY"`
+		Key              string        `env:"KEY"`
+		ServerAddress    string        `env:"ADDRESS"`
+		PollInterval     time.Duration `env:"POLL_INTERVAL"`
+		ReportInterval   time.Duration `env:"REPORT_INTERVAL"`
 	}
 )
 

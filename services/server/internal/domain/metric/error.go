@@ -14,8 +14,8 @@ var (
 
 type (
 	ErrMetric struct {
-		ID    string
 		error error
+		ID    string
 	}
 )
 

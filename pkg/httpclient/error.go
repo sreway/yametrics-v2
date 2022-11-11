@@ -3,8 +3,8 @@ package httpclient
 import "fmt"
 
 type ErrHTTPClient struct {
-	StatusCode int
 	msg        string
+	StatusCode int
 }
 
 func (e *ErrHTTPClient) Error() string {
