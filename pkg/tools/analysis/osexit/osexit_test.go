@@ -10,5 +10,5 @@ import (
 
 func TestFromFileSystem(t *testing.T) {
 	testdata := analysistest.TestData()
-	analysistest.Run(t, testdata, osexit.Analyzer, "a") // loads testdata/src/a/a.go
+	analysistest.Run(t, testdata, osexit.Analyzer, "a", "b") // loads testdata/src/
 }
