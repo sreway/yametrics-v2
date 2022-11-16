@@ -16,6 +16,9 @@ type UseCase struct {
 }
 
 func (uc *UseCase) Send(ctx context.Context, endpoint string, m []metric.Metric) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	if len(m) == 0 {
 		log.Warn(ErrEmptyMetrics.Error())
 		return ErrEmptyMetrics
