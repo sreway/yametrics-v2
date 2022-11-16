@@ -82,9 +82,6 @@ func (uc *UseCase) GetMany(ctx context.Context) ([]metric.Metric, error) {
 }
 
 func (uc *UseCase) StorageCheck(ctx context.Context) error {
-	if err := ctx.Err(); err != nil {
-		return err
-	}
 	return uc.storage.StorageCheck(ctx)
 }
 
