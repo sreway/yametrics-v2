@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-
 	"github.com/sreway/yametrics-v2/services/server/config"
 
 	"github.com/sreway/yametrics-v2/pkg/postgres"
@@ -37,19 +36,20 @@ func InitMemory(cfg config.MemoryStorageConfig) (storage.Storage, error) {
 }
 
 func (s *Server) InitStorage(ctx context.Context) error {
-	var st storage.Storage
-	st, err := InitPostgres(ctx, s.config.Postgres)
-	if err == nil {
-		log.Info("Server: use postgres storage")
-		s.storage = st
-		err = s.Migrate()
+	if s.config.Postgres.DSN != "" {
+		pg, err := InitPostgres(ctx, s.config.Postgres)
+		if err == nil {
+			log.Info("Server: use postgres storage")
+			s.storage = pg
+			err = s.Migrate()
+			log.Warn(err.Error())
+			return nil
+		}
+
 		log.Warn(err.Error())
-		return nil
 	}
 
-	log.Warn(err.Error())
-
-	st, err = InitMemory(s.config.MemoryStorage)
+	st, err := InitMemory(s.config.MemoryStorage)
 	if err != nil {
 		return err
 	}
