@@ -2,9 +2,8 @@ package server
 
 import (
 	"context"
+	"errors"
 	"time"
-
-	"github.com/sreway/yametrics-v2/services/server/config"
 
 	"github.com/sreway/yametrics-v2/pkg/postgres"
 	repoMemory "github.com/sreway/yametrics-v2/services/server/internal/repository/storage/memory/metric"
@@ -14,74 +13,59 @@ import (
 	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 )
 
-func InitPostgres(ctx context.Context, cfg config.PostgresConfig) (storage.Storage, error) {
-	if cfg.DSN == "" {
-		return nil, ErrEmptyDSN
-	}
-	pg, err := postgres.New(ctx, cfg.DSN)
-	if err != nil {
-		return nil, err
-	}
-	s := repoPostgres.New(pg)
-	return s, nil
-}
-
-func InitMemory(cfg config.MemoryStorageConfig) (storage.Storage, error) {
-	s, err := repoMemory.New(cfg.StoreFile)
-	if err != nil {
-		return nil, err
-	}
-
-	return s, nil
-}
-
 func (s *Server) InitStorage(ctx context.Context) error {
 	if s.config.Postgres.DSN != "" {
-		pg, err := InitPostgres(ctx, s.config.Postgres)
+		pg, err := postgres.New(ctx, s.config.Postgres.DSN)
 		if err == nil {
-			log.Info("Server: use postgres storage")
-			s.storage = pg
+			s.storage = repoPostgres.New(pg)
 			err = s.Migrate()
-			log.Warn(err.Error())
+			if err != nil {
+				log.Warn(err.Error())
+			}
+			log.Info("Server: use postgres storage")
 			return nil
 		}
 
 		log.Warn(err.Error())
 	}
 
-	st, err := InitMemory(s.config.MemoryStorage)
+	st, err := repoMemory.New(s.config.MemoryStorage.StoreFile)
 	if err != nil {
 		return err
 	}
 
 	s.storage = st
-	mst := s.storage.(storage.MemoryStorage)
-	if s.config.MemoryStorage.Restore {
-		err = mst.Load()
-		if err != nil {
-			log.Info(err.Error())
-		}
-	}
 
-	if s.config.MemoryStorage.StoreInterval != 0 {
-		go func() {
-			tick := time.NewTicker(s.config.MemoryStorage.StoreInterval)
-			defer tick.Stop()
-			for {
-				select {
-				case <-tick.C:
-					err = mst.Store()
-					if err != nil {
-						log.Info(err.Error())
-					}
-					log.Info("Server: success store metrics")
-				case <-ctx.Done():
-					return
-				}
+	switch t := s.storage.(type) {
+	case storage.MemoryStorage:
+		if s.config.MemoryStorage.Restore {
+			err = t.Load()
+			if err != nil {
+				log.Info(err.Error())
 			}
-		}()
-	}
+		}
 
+		if s.config.MemoryStorage.StoreInterval != 0 {
+			go func() {
+				tick := time.NewTicker(s.config.MemoryStorage.StoreInterval)
+				defer tick.Stop()
+				for {
+					select {
+					case <-tick.C:
+						err = t.Store()
+						if err != nil {
+							log.Info(err.Error())
+						}
+						log.Info("Server: success store metrics")
+					case <-ctx.Done():
+						return
+					}
+				}
+			}()
+		}
+	default:
+		return errors.New("invalid storage")
+	}
 	log.Info("Server: use memory storage")
 	return nil
 }
