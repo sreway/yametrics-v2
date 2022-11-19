@@ -3,7 +3,7 @@ package pem
 import (
 	"crypto/tls"
 	"encoding/pem"
-	"io/ioutil"
+	"os"
 )
 
 func ParsePEM(path string) (*tls.Certificate, error) {
@@ -12,7 +12,7 @@ func ParsePEM(path string) (*tls.Certificate, error) {
 		block *pem.Block
 	)
 
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
