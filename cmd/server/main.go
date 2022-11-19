@@ -14,7 +14,7 @@ func main() {
 	flag.BoolVar(&config.DefaultRestore, "r", config.DefaultRestore, "restoring metrics at startup")
 	flag.StringVar(&config.DefaultStoreFile, "f", config.DefaultStoreFile, "store file")
 	flag.StringVar(&config.DefaultKey, "k", config.DefaultKey, "encrypt key")
-	flag.StringVar(&config.DefaultDSN, "d", config.DefaultDSN, "PosgreSQL data source name")
+	flag.StringVar(&config.DefaultDSN, "d", config.DefaultDSN, "PostgreSQL data source name")
 	flag.Parse()
 
 	srv, err := server.New()
