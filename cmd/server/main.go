@@ -15,6 +15,10 @@ func main() {
 	flag.StringVar(&config.DefaultStoreFile, "f", config.DefaultStoreFile, "store file")
 	flag.StringVar(&config.DefaultKey, "k", config.DefaultKey, "encrypt key")
 	flag.StringVar(&config.DefaultDSN, "d", config.DefaultDSN, "PostgreSQL data source name")
+	flag.StringVar(&config.DefaultCryptoKey, "crypto-key", config.DefaultCryptoKey,
+		"x509 private key path")
+	flag.StringVar(&config.DefaultCryptoCrt, "crypto-cert", config.DefaultCryptoCrt,
+		"x509 certificate path")
 	flag.Parse()
 
 	srv, err := server.New()

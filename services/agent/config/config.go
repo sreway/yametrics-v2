@@ -16,6 +16,7 @@ var (
 	DefaultPollInterval     = 2 * time.Second
 	DefaultSecretKey        = "secret"
 	DefaultMetricsEnpoint   = "/updates/"
+	DefaultServerPublicKey  string
 )
 
 type (
@@ -26,6 +27,7 @@ type (
 		ServerAddress    string        `env:"ADDRESS"`
 		PollInterval     time.Duration `env:"POLL_INTERVAL"`
 		ReportInterval   time.Duration `env:"REPORT_INTERVAL"`
+		ServerPublicKey  string        `env:"CRYPTO_KEY"`
 	}
 )
 
@@ -37,6 +39,7 @@ func New() (*Config, error) {
 		Key:              DefaultSecretKey,
 		MetricsEnpoint:   DefaultMetricsEnpoint,
 		ServerHTTPScheme: DefaultServerHTTPScheme,
+		ServerPublicKey:  DefaultServerPublicKey,
 	}
 
 	if err := env.Parse(&cfg); err != nil {
@@ -51,6 +54,10 @@ func New() (*Config, error) {
 	_, err = strconv.Atoi(port)
 	if err != nil {
 		return nil, NewConfigError(fmt.Errorf("invalid port %s", port))
+	}
+
+	if cfg.ServerPublicKey != "" {
+		cfg.ServerHTTPScheme = "https"
 	}
 
 	return &cfg, nil

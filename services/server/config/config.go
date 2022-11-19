@@ -15,6 +15,8 @@ var (
 	DefaultRestore       = true
 	DefaultStoreFile     = "/tmp/devops-metrics-db.json"
 	DefaultKey           string
+	DefaultCryptoKey     string
+	DefaultCryptoCrt     string
 	DefaultCompressLevel = 5
 	DefaultCompressTypes = []string{
 		"text/html",
@@ -35,6 +37,8 @@ type (
 
 	HTTPConfig struct {
 		Address       string `env:"ADDRESS"`
+		CryptoKey     string `env:"CRYPTO_KEY"`
+		CryptoCrt     string `env:"CRYPTO_CRT"`
 		CompressTypes []string
 		CompressLevel int
 	}
@@ -56,6 +60,8 @@ func New() (*Config, error) {
 	cfg.HTTP.Address = DefaultAddress
 	cfg.HTTP.CompressLevel = DefaultCompressLevel
 	cfg.HTTP.CompressTypes = DefaultCompressTypes
+	cfg.HTTP.CryptoKey = DefaultCryptoKey
+	cfg.HTTP.CryptoCrt = DefaultCryptoCrt
 	cfg.MemoryStorage.StoreInterval = DefaultStoreInterval
 	cfg.MemoryStorage.Restore = DefaultRestore
 	cfg.MemoryStorage.StoreFile = DefaultStoreFile
