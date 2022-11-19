@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 
-
 	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 
 	"github.com/go-chi/chi/v5"
