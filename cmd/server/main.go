@@ -19,6 +19,9 @@ func main() {
 		"x509 private key path")
 	flag.StringVar(&config.DefaultCryptoCrt, "crypto-cert", config.DefaultCryptoCrt,
 		"x509 certificate path")
+	flag.StringVar(&config.DefaultConfigFile, "config", config.DefaultConfigFile,
+		"json configuration file")
+	flag.StringVar(&config.DefaultConfigFile, "c", config.DefaultConfigFile, "json configuration file")
 	flag.Parse()
 
 	srv, err := server.New()

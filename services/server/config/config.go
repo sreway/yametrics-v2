@@ -1,10 +1,14 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 	"strconv"
 	"time"
+
+	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 
 	"github.com/caarlos0/env/v6"
 )
@@ -23,34 +27,36 @@ var (
 		"text/plain",
 		"application/json",
 	}
+	DefaultConfigFile string
 	DefaultDSN        string
 	DefaultMigrateURL = "file://services/server/migrations"
 )
 
 type (
 	Config struct {
+		ConfigFile    string `env:"CONFIG"`
 		SecretKey     string
-		Postgres      PostgresConfig
-		MemoryStorage MemoryStorageConfig
-		HTTP          HTTPConfig
+		Postgres      PostgresConfig      `json:"postgres"`
+		MemoryStorage MemoryStorageConfig `json:"memory_storage"`
+		HTTP          HTTPConfig          `json:"http"`
 	}
 
 	HTTPConfig struct {
-		Address       string `env:"ADDRESS"`
-		CryptoKey     string `env:"CRYPTO_KEY"`
-		CryptoCrt     string `env:"CRYPTO_CRT"`
+		Address       string `json:"address" env:"ADDRESS"`
+		CryptoKey     string `json:"crypto_key" env:"CRYPTO_KEY"`
+		CryptoCrt     string `json:"crypto_crt" env:"CRYPTO_CRT"`
 		CompressTypes []string
 		CompressLevel int
 	}
 
 	MemoryStorageConfig struct {
-		StoreFile     string        `env:"STORE_FILE"`
-		Restore       bool          `env:"RESTORE"`
-		StoreInterval time.Duration `env:"STORE_INTERVAL"`
+		StoreFile     string        `json:"store_file" env:"STORE_FILE"`
+		Restore       bool          `json:"restore" env:"RESTORE"`
+		StoreInterval time.Duration `json:"store_interval" env:"STORE_INTERVAL"`
 	}
 
 	PostgresConfig struct {
-		DSN        string `env:"DATABASE_DSN"`
+		DSN        string `json:"database_dsn" env:"DATABASE_DSN"`
 		MigrateURL string
 	}
 )
@@ -68,7 +74,21 @@ func New() (*Config, error) {
 	cfg.Postgres.DSN = DefaultDSN
 	cfg.Postgres.MigrateURL = DefaultMigrateURL
 	cfg.SecretKey = DefaultKey
+	cfg.ConfigFile = DefaultConfigFile
 
+	if cfg.ConfigFile != "" {
+		f, err := os.Open(cfg.ConfigFile)
+		if err != nil {
+			return nil, NewConfigError(err)
+		}
+		defer f.Close()
+
+		if err = json.NewDecoder(f).Decode(&cfg); err != nil {
+			return nil, NewConfigError(err)
+		}
+
+		log.Info("success load json config")
+	}
 	if err := env.Parse(&cfg); err != nil {
 		return nil, NewConfigError(err)
 	}
@@ -82,6 +102,5 @@ func New() (*Config, error) {
 	if err != nil {
 		return nil, NewConfigError(fmt.Errorf("invalid port %s", port))
 	}
-
 	return &cfg, nil
 }

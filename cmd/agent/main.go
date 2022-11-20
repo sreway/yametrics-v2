@@ -29,7 +29,10 @@ func init() {
 	flag.DurationVar(&config.DefaultPollInterval, "p", config.DefaultPollInterval, "poll interval")
 	flag.StringVar(&config.DefaultSecretKey, "k", config.DefaultSecretKey, "encrypt key")
 	flag.StringVar(&config.DefaultServerPublicKey, "crypto-key", config.DefaultServerPublicKey,
-		"server  public key")
+		"server public key")
+	flag.StringVar(&config.DefaultConfigFile, "config", config.DefaultConfigFile,
+		"json configuration file")
+	flag.StringVar(&config.DefaultConfigFile, "c", config.DefaultConfigFile, "json configuration file")
 	flag.Parse()
 }
 
