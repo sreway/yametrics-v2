@@ -3,8 +3,9 @@ package pem
 import (
 	"crypto/tls"
 	"encoding/pem"
-	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 	"os"
+
+	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 )
 
 func ParsePEM(path string) (*tls.Certificate, error) {
@@ -18,7 +19,7 @@ func ParsePEM(path string) (*tls.Certificate, error) {
 		return nil, err
 	}
 
-	block, data = pem.Decode(data)
+	block, _ = pem.Decode(data)
 	if block == nil || block.Type != "CERTIFICATE" {
 		log.Fatal("failed to decode PEM block containing certificate key")
 	}
