@@ -96,6 +96,9 @@ func New(opts ...config.OptionAgent) (*Agent, error) {
 	a := new(Agent)
 	a.config = cfg
 	a.collector = collector.New(cfg.Key)
-	a.sender = sender.New(cfg.ServerHTTPScheme + "://" + cfg.ServerAddress)
+	a.sender, err = sender.New(cfg)
+	if err != nil {
+		return nil, err
+	}
 	return a, nil
 }

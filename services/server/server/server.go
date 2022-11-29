@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"github.com/sreway/yametrics-v2/services/server/config"
@@ -25,6 +26,8 @@ func (s *Server) Run() {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	exitch := make(chan int)
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
 
 	err := s.InitStorage(ctx)
 	if err != nil {
@@ -35,7 +38,8 @@ func (s *Server) Run() {
 	s.http = http.New(service, &s.config.HTTP)
 
 	go func() {
-		err = s.http.Run(&s.config.HTTP)
+		defer wg.Done()
+		err = s.http.Run(ctx, &s.config.HTTP)
 		if err != nil {
 			log.Error(err.Error())
 			signals <- syscall.SIGSTOP
@@ -66,6 +70,7 @@ func (s *Server) Run() {
 
 	exitCode := <-exitch
 	cancel()
+	wg.Wait()
 
 	err = s.storage.Close()
 
