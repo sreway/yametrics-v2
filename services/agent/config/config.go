@@ -22,6 +22,7 @@ var (
 	DefaultMetricsEnpoint   = "/updates/"
 	DefaultServerPublicKey  string
 	DefaultConfigFile       string
+	DefaultRealIP           = "127.0.0.1"
 )
 
 type (
@@ -32,6 +33,7 @@ type (
 		Key              string        `env:"KEY"`
 		ServerAddress    string        `json:"address" env:"ADDRESS"`
 		ServerPublicKey  string        `json:"crypto_key" env:"CRYPTO_KEY"`
+		RealIP           string        `json:"real_ip" env:"REAL_IP"`
 		PollInterval     time.Duration `json:"poll_interval" env:"POLL_INTERVAL"`
 		ReportInterval   time.Duration `json:"report_interval" env:"REPORT_INTERVAL"`
 	}
@@ -47,6 +49,7 @@ func New() (*Config, error) {
 		MetricsEnpoint:   DefaultMetricsEnpoint,
 		ServerHTTPScheme: DefaultServerHTTPScheme,
 		ServerPublicKey:  DefaultServerPublicKey,
+		RealIP:           DefaultRealIP,
 	}
 
 	if cfg.ConfigFile != "" {

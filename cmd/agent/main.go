@@ -30,6 +30,7 @@ func init() {
 	flag.StringVar(&config.DefaultSecretKey, "k", config.DefaultSecretKey, "encrypt key")
 	flag.StringVar(&config.DefaultServerPublicKey, "crypto-key", config.DefaultServerPublicKey,
 		"server public key")
+	flag.StringVar(&config.DefaultRealIP, "ip", config.DefaultRealIP, "agent IP address")
 	flag.StringVar(&config.DefaultConfigFile, "config", config.DefaultConfigFile,
 		"json configuration file")
 	flag.StringVar(&config.DefaultConfigFile, "c", config.DefaultConfigFile, "json configuration file")

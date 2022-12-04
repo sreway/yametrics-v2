@@ -27,24 +27,27 @@ var (
 		"text/plain",
 		"application/json",
 	}
-	DefaultConfigFile string
-	DefaultDSN        string
-	DefaultMigrateURL = "file://services/server/migrations"
+	DefaultConfigFile    string
+	DefaultDSN           string
+	DefaultMigrateURL    = "file://services/server/migrations"
+	DefaultTrustedSubnet string
 )
 
 type (
 	Config struct {
 		ConfigFile    string `env:"CONFIG"`
 		SecretKey     string
+		TrustedSubnet string              `json:"trusted_subnet" env:"TRUSTED_SUBNET"`
 		Postgres      PostgresConfig      `json:"postgres"`
 		MemoryStorage MemoryStorageConfig `json:"memory_storage"`
 		HTTP          HTTPConfig          `json:"http"`
 	}
 
 	HTTPConfig struct {
+		TrustedSubnet *net.IPNet
 		Address       string `json:"address" env:"ADDRESS"`
 		CryptoKey     string `json:"crypto_key" env:"CRYPTO_KEY"`
-		CryptoCrt     string `json:"crypto_crt" env:"CRYPTO_CRT"`
+		CryptoCrt     string `json:"crypto_cert" env:"CRYPTO_CRT"`
 		CompressTypes []string
 		CompressLevel int
 	}
@@ -68,6 +71,7 @@ func New() (*Config, error) {
 	cfg.HTTP.CompressTypes = DefaultCompressTypes
 	cfg.HTTP.CryptoKey = DefaultCryptoKey
 	cfg.HTTP.CryptoCrt = DefaultCryptoCrt
+	cfg.TrustedSubnet = DefaultTrustedSubnet
 	cfg.MemoryStorage.StoreInterval = DefaultStoreInterval
 	cfg.MemoryStorage.Restore = DefaultRestore
 	cfg.MemoryStorage.StoreFile = DefaultStoreFile
@@ -86,9 +90,9 @@ func New() (*Config, error) {
 		if err = json.NewDecoder(f).Decode(&cfg); err != nil {
 			return nil, NewConfigError(err)
 		}
-
 		log.Info("success load json config")
 	}
+
 	if err := env.Parse(&cfg); err != nil {
 		return nil, NewConfigError(err)
 	}
@@ -101,6 +105,12 @@ func New() (*Config, error) {
 	_, err = strconv.Atoi(port)
 	if err != nil {
 		return nil, NewConfigError(fmt.Errorf("invalid port %s", port))
+	}
+
+	if cfg.TrustedSubnet != "" {
+		if _, cfg.HTTP.TrustedSubnet, err = net.ParseCIDR(cfg.TrustedSubnet); err != nil {
+			return nil, NewConfigError(fmt.Errorf("incorrect trusted subnet %s", cfg.TrustedSubnet))
+		}
 	}
 	return &cfg, nil
 }

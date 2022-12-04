@@ -22,6 +22,7 @@ func main() {
 	flag.StringVar(&config.DefaultConfigFile, "config", config.DefaultConfigFile,
 		"json configuration file")
 	flag.StringVar(&config.DefaultConfigFile, "c", config.DefaultConfigFile, "json configuration file")
+	flag.StringVar(&config.DefaultTrustedSubnet, "t", config.DefaultTrustedSubnet, "trusted subnet")
 	flag.Parse()
 
 	srv, err := server.New()
