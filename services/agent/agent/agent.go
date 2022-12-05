@@ -2,18 +2,17 @@ package agent
 
 import (
 	"context"
+	"github.com/sreway/yametrics-v2/services/agent/internal/usecases/sender/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
 
+	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 	"github.com/sreway/yametrics-v2/services/agent/config"
 	"github.com/sreway/yametrics-v2/services/agent/internal/usecases"
 	"github.com/sreway/yametrics-v2/services/agent/internal/usecases/collector"
-	"github.com/sreway/yametrics-v2/services/agent/internal/usecases/sender"
-
-	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 )
 
 type Agent struct {
@@ -96,7 +95,7 @@ func New(opts ...config.OptionAgent) (*Agent, error) {
 	a := new(Agent)
 	a.config = cfg
 	a.collector = collector.New(cfg.Key)
-	a.sender, err = sender.New(cfg)
+	a.sender, err = http.New(cfg)
 	if err != nil {
 		return nil, err
 	}
