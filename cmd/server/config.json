@@ -12,5 +12,5 @@
     "store_interval": "20s",
     "store_file": "/tmp/devops-metrics-db.json"
   },
-  "trusted_subnet": "192.168.88.0/24"
+  "trusted_subnet": ""
 }

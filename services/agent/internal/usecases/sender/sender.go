@@ -21,13 +21,13 @@ type UseCase struct {
 	http *httpclient.Client
 }
 
-func (uc *UseCase) Send(ctx context.Context, endpoint string, m []metric.Metric) error {
+func (uc *UseCase) Send(ctx context.Context, m []metric.Metric) error {
 	if len(m) == 0 {
 		log.Warn(ErrEmptyMetrics.Error())
 		return ErrEmptyMetrics
 	}
 
-	r, err := uc.http.R().SetContext(ctx).SetBody(&m).Post(endpoint)
+	r, err := uc.http.R().SetContext(ctx).SetBody(&m).Post("")
 	if err != nil {
 		return httpclient.NewErrHTTPClient(r.StatusCode(), err.Error())
 	}
@@ -41,7 +41,7 @@ func (uc *UseCase) Send(ctx context.Context, endpoint string, m []metric.Metric)
 }
 
 func New(cfg *config.Config) (*UseCase, error) {
-	url := cfg.ServerHTTPScheme + "://" + cfg.ServerAddress
+	url := cfg.ServerHTTPScheme + "://" + cfg.ServerAddress + cfg.MetricsEnpoint
 	ip := net.ParseIP(cfg.RealIP)
 
 	if ip == nil {

@@ -66,7 +66,7 @@ func (a *Agent) Send(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case <-tick.C:
 			metrics := a.collector.Expose()
-			err := a.sender.Send(ctx, a.config.MetricsEnpoint, metrics)
+			err := a.sender.Send(ctx, metrics)
 			if err != nil {
 				log.Error(err.Error())
 			} else {
