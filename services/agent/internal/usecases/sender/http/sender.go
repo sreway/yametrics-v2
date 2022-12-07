@@ -73,3 +73,7 @@ func New(cfg *config.Config) (*UseCase, error) {
 		http: httpclient.New(httpclient.WithBaseURL(url), httpclient.WithRealIP(ip)),
 	}, nil
 }
+
+func (uc *UseCase) Close() error {
+	return nil
+}

@@ -23,6 +23,7 @@ var (
 	DefaultServerPublicKey  string
 	DefaultConfigFile       string
 	DefaultRealIP           = "127.0.0.1"
+	DefaultUseGRPC          = false
 )
 
 type (
@@ -36,6 +37,7 @@ type (
 		RealIP           string        `json:"real_ip" env:"REAL_IP"`
 		PollInterval     time.Duration `json:"poll_interval" env:"POLL_INTERVAL"`
 		ReportInterval   time.Duration `json:"report_interval" env:"REPORT_INTERVAL"`
+		UseGRPC          bool          `json:"use_grpc" env:"USE_GRPC"`
 	}
 )
 
@@ -50,6 +52,7 @@ func New() (*Config, error) {
 		ServerHTTPScheme: DefaultServerHTTPScheme,
 		ServerPublicKey:  DefaultServerPublicKey,
 		RealIP:           DefaultRealIP,
+		UseGRPC:          DefaultUseGRPC,
 	}
 
 	if cfg.ConfigFile != "" {

@@ -2,12 +2,14 @@ package agent
 
 import (
 	"context"
-	"github.com/sreway/yametrics-v2/services/agent/internal/usecases/sender/http"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/sreway/yametrics-v2/services/agent/internal/usecases/sender/grpc"
+	"github.com/sreway/yametrics-v2/services/agent/internal/usecases/sender/http"
 
 	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 	"github.com/sreway/yametrics-v2/services/agent/config"
@@ -49,6 +51,11 @@ func (a *Agent) Run() {
 	exitCode := <-exitch
 	cancel()
 	wg.Wait()
+	err := a.sender.Close()
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
+	}
 	os.Exit(exitCode)
 }
 
@@ -60,7 +67,6 @@ func (a *Agent) Send(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	tick := time.NewTicker(a.config.ReportInterval)
 	defer tick.Stop()
-
 	for {
 		select {
 		case <-tick.C:
@@ -95,6 +101,13 @@ func New(opts ...config.OptionAgent) (*Agent, error) {
 	a := new(Agent)
 	a.config = cfg
 	a.collector = collector.New(cfg.Key)
+	if cfg.UseGRPC {
+		a.sender, err = grpc.New(cfg)
+		if err != nil {
+			return nil, err
+		}
+		return a, nil
+	}
 	a.sender, err = http.New(cfg)
 	if err != nil {
 		return nil, err

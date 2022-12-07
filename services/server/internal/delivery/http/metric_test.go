@@ -115,7 +115,8 @@ func TestDelivery_UpdateMetric(t *testing.T) {
 
 	for _, tt := range tests {
 		ms := metricService.New(store, cfg.SecretKey)
-		d := New(ms, &cfg.HTTP)
+		d, err := New(ms, &cfg.Delivery)
+		assert.NoError(t, err)
 		ts := httptest.NewServer(d.router)
 
 		t.Run(tt.name, func(t *testing.T) {
@@ -239,7 +240,8 @@ func TestDelivery_GetMetric(t *testing.T) {
 
 	for _, tt := range tests {
 		ms := metricService.New(store, cfg.SecretKey)
-		d := New(ms, &cfg.HTTP)
+		d, err := New(ms, &cfg.Delivery)
+		assert.NoError(t, err)
 		ts := httptest.NewServer(d.router)
 		err = store.BatchAdd(ctx, tt.fields.storageData)
 		assert.NoError(t, err)
@@ -328,7 +330,8 @@ func TestDelivery_UpdateMetricJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		ms := metricService.New(store, cfg.SecretKey)
-		d := New(ms, &cfg.HTTP)
+		d, err := New(ms, &cfg.Delivery)
+		assert.NoError(t, err)
 		ts := httptest.NewServer(d.router)
 
 		t.Run(tt.name, func(t *testing.T) {
@@ -435,7 +438,8 @@ func TestDelivery_GetMetricJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		ms := metricService.New(store, cfg.SecretKey)
-		d := New(ms, &cfg.HTTP)
+		d, err := New(ms, &cfg.Delivery)
+		assert.NoError(t, err)
 		ts := httptest.NewServer(d.router)
 		err = store.BatchAdd(ctx, tt.fields.storageData)
 		assert.NoError(t, err)
@@ -499,7 +503,7 @@ func TestDelivery_BatchMetrics(t *testing.T) {
 
 	for _, tt := range tests {
 		ms := metricService.New(store, cfg.SecretKey)
-		d := New(ms, &cfg.HTTP)
+		d, err := New(ms, &cfg.Delivery)
 		ts := httptest.NewServer(d.router)
 
 		t.Run(tt.name, func(t *testing.T) {
@@ -557,7 +561,8 @@ func TestDelivery_HealthCheckStorage(t *testing.T) {
 		assert.NoError(t, err)
 
 		ms := metricService.New(store, cfg.SecretKey)
-		d := New(ms, &cfg.HTTP)
+		d, err := New(ms, &cfg.Delivery)
+		assert.NoError(t, err)
 		ts := httptest.NewServer(d.router)
 		assert.NoError(t, err)
 

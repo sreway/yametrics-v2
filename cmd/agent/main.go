@@ -34,6 +34,7 @@ func init() {
 	flag.StringVar(&config.DefaultConfigFile, "config", config.DefaultConfigFile,
 		"json configuration file")
 	flag.StringVar(&config.DefaultConfigFile, "c", config.DefaultConfigFile, "json configuration file")
+	flag.BoolVar(&config.DefaultUseGRPC, "grpc", config.DefaultUseGRPC, "use grpc")
 	flag.Parse()
 }
 

@@ -14,7 +14,7 @@ import (
 	"github.com/sreway/yametrics-v2/services/server/config"
 )
 
-func (d *Delivery) useMiddleware(cfg *config.HTTPConfig, r chi.Router) {
+func (d *Delivery) useMiddleware(cfg *config.DeliveryConfig, r chi.Router) {
 	r.Use(middleware.Compress(cfg.CompressLevel, cfg.CompressTypes...))
 	if cfg.TrustedSubnet != nil {
 		r.Use(TrustedSubnet(cfg.TrustedSubnet))

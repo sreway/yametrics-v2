@@ -7,8 +7,11 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/sreway/yametrics-v2/services/server/config"
+	"github.com/sreway/yametrics-v2/services/server/internal/delivery/grpc"
 	"github.com/sreway/yametrics-v2/services/server/internal/delivery/http"
+
+	"github.com/sreway/yametrics-v2/services/server/config"
+	"github.com/sreway/yametrics-v2/services/server/internal/usecases/adapters/delivery"
 	"github.com/sreway/yametrics-v2/services/server/internal/usecases/adapters/storage"
 	metricService "github.com/sreway/yametrics-v2/services/server/internal/usecases/metric"
 
@@ -16,9 +19,9 @@ import (
 )
 
 type Server struct {
-	config  *config.Config
-	http    *http.Delivery
-	storage storage.Storage
+	config   *config.Config
+	delivery delivery.Delivery
+	storage  storage.Storage
 }
 
 func (s *Server) Run() {
@@ -35,11 +38,20 @@ func (s *Server) Run() {
 	}
 
 	service := metricService.New(s.storage, s.config.SecretKey)
-	s.http = http.New(service, &s.config.HTTP)
+
+	if s.config.UseGRPC {
+		if s.delivery, err = grpc.New(service, &s.config.Delivery); err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		if s.delivery, err = http.New(service, &s.config.Delivery); err != nil {
+			log.Fatal(err.Error())
+		}
+	}
 
 	go func() {
 		defer wg.Done()
-		err = s.http.Run(ctx, &s.config.HTTP)
+		err = s.delivery.Run(ctx, &s.config.Delivery)
 		if err != nil {
 			log.Error(err.Error())
 			signals <- syscall.SIGSTOP
