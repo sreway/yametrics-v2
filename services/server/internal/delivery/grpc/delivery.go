@@ -40,10 +40,10 @@ func New(uc usecases.Metric, cfg *config.DeliveryConfig) (*Delivery, error) {
 
 func (d *Delivery) Run(ctx context.Context, cfg *config.DeliveryConfig) error {
 	serverCtx, stopServer := context.WithCancel(context.Background())
+	defer stopServer()
 
 	listen, err := net.Listen("tcp", cfg.Address)
 	if err != nil {
-		stopServer()
 		return err
 	}
 
