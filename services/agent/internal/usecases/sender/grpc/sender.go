@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 
 	"github.com/sreway/yametrics-v2/pkg/metric"
 	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
@@ -90,15 +92,12 @@ func (uc *UseCase) Send(ctx context.Context, m []metric.Metric) error {
 		metrics = append(metrics, rm)
 	}
 
-	resp, err := uc.grpc.BatchAdd(ctx, &pb.BatchAddMetricRequest{
+	_, err := uc.grpc.BatchAdd(ctx, &pb.BatchAddMetricRequest{
 		Metrics: metrics,
 	})
 	if err != nil {
+		HandleErr(err)
 		return err
-	}
-
-	if resp.Error != "" {
-		return fmt.Errorf("sender.Send:%s", resp.Error)
 	}
 
 	return nil
@@ -106,4 +105,16 @@ func (uc *UseCase) Send(ctx context.Context, m []metric.Metric) error {
 
 func (uc *UseCase) Close() error {
 	return uc.conn.Close()
+}
+
+func HandleErr(err error) {
+	if e, ok := status.FromError(err); ok {
+		if e.Code() == codes.InvalidArgument {
+			log.Error(fmt.Sprintf("sending invalid data: %s", e.Message()))
+		} else {
+			log.Error(fmt.Sprintf("error code %s: message %s", e.Code(), e.Message()))
+		}
+	} else {
+		log.Error(fmt.Sprintf("can't parsing err: %v", err))
+	}
 }

@@ -19,17 +19,13 @@ message AddMetricRequest {
   Metric metric = 1;
 }
 
-message AddMetricResponse {
-  string error = 1;
-}
+message AddMetricResponse {}
 
 message BatchAddMetricRequest {
   repeated Metric metrics = 1;
 }
 
-message BatchAddMetricResponse {
-  string error = 1;
-}
+message BatchAddMetricResponse {}
 
 message GetMetricRequest {
   string id = 1;
@@ -38,21 +34,17 @@ message GetMetricRequest {
 
 message GetMetricResponse {
   Metric metric = 1;
-  string error = 2;
 }
 
 message GetManyMetricRequest {}
 
 message GetManyMetricResponse {
   repeated Metric metrics = 1;
-  string error = 2;
 }
 
 message StorageCheckMetricRequest {}
 
-message StorageCheckMetricResponse {
-  string error = 1;
-}
+message StorageCheckMetricResponse {}
 
 service MetricService{
   rpc Add(AddMetricRequest) returns (AddMetricResponse);

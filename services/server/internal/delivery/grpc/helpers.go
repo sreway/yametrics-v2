@@ -5,6 +5,7 @@ import (
 
 	"github.com/sreway/yametrics-v2/pkg/metric"
 	pb "github.com/sreway/yametrics-v2/proto/metric/v1"
+	domain "github.com/sreway/yametrics-v2/services/server/internal/domain/metric"
 )
 
 func NewMetric(in *pb.Metric) (*metric.Metric, error) {
@@ -19,7 +20,8 @@ func NewMetric(in *pb.Metric) (*metric.Metric, error) {
 		m.MType = metric.CounterType
 		m.Delta = metric.NewCounter(in.Delta)
 	default:
-		return nil, fmt.Errorf("unknown metric type")
+		err := fmt.Errorf("%w: %d", domain.ErrInvalidMetricType, in.Type)
+		return nil, domain.NewMetricErr(in.Id, err)
 	}
 
 	m.Hash = in.Hash
@@ -40,7 +42,8 @@ func NewProtobufMetric(m *metric.Metric) (*pb.Metric, error) {
 		pbm.Type = pb.Type_COUNTER
 		pbm.Delta = m.Delta.Value()
 	default:
-		return nil, fmt.Errorf("unknown metric type")
+		err := fmt.Errorf("%w: %s", domain.ErrInvalidMetricType, m.MType)
+		return nil, domain.NewMetricErr(m.ID, err)
 	}
 	pbm.Hash = m.Hash
 

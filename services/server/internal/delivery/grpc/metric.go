@@ -2,11 +2,15 @@ package grpc
 
 import (
 	"context"
-	"fmt"
+	"errors"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/sreway/yametrics-v2/pkg/metric"
 	log "github.com/sreway/yametrics-v2/pkg/tools/logger"
 	pb "github.com/sreway/yametrics-v2/proto/metric/v1"
+	domain "github.com/sreway/yametrics-v2/services/server/internal/domain/metric"
 	"github.com/sreway/yametrics-v2/services/server/internal/usecases"
 )
 
@@ -18,26 +22,17 @@ type MetricServer struct {
 func (s *MetricServer) Add(ctx context.Context, in *pb.AddMetricRequest) (*pb.AddMetricResponse, error) {
 	var m *metric.Metric
 	response := new(pb.AddMetricResponse)
-
-	switch in.Metric.Type {
-	case pb.Type_GAUGE:
-		m = metric.New(in.Metric.Id, metric.GaugeType, in.Metric.Value)
-	case pb.Type_COUNTER:
-		m = metric.New(in.Metric.Id, metric.CounterType, in.Metric.Delta)
-	default:
-		msg := "unknown metric type"
-		response.Error = msg
-		log.Error(msg)
-		return response, nil
-	}
-
-	err := s.metrics.Add(ctx, m)
+	m, err := NewMetric(in.Metric)
 	if err != nil {
-		log.Error(err.Error())
-		response.Error = err.Error()
+		return response, HandelErrMetric(err)
 	}
 
-	return response, err
+	err = s.metrics.Add(ctx, m)
+	if err != nil {
+		return response, HandelErrMetric(err)
+	}
+
+	return response, nil
 }
 
 func (s *MetricServer) BatchAdd(ctx context.Context, in *pb.BatchAddMetricRequest) (*pb.BatchAddMetricResponse, error) {
@@ -46,18 +41,14 @@ func (s *MetricServer) BatchAdd(ctx context.Context, in *pb.BatchAddMetricReques
 	for _, i := range in.Metrics {
 		m, err := NewMetric(i)
 		if err != nil {
-			response.Error = err.Error()
-			log.Error(err.Error())
-			return response, err
+			return response, HandelErrMetric(err)
 		}
 		metrics = append(metrics, m)
 	}
 
 	err := s.metrics.BatchAdd(ctx, metrics)
 	if err != nil {
-		response.Error = err.Error()
-		log.Error(err.Error())
-		return response, err
+		return response, HandelErrMetric(err)
 	}
 
 	return response, nil
@@ -66,29 +57,14 @@ func (s *MetricServer) BatchAdd(ctx context.Context, in *pb.BatchAddMetricReques
 func (s *MetricServer) Get(ctx context.Context, in *pb.GetMetricRequest) (*pb.GetMetricResponse, error) {
 	var mtype metric.Type
 	response := new(pb.GetMetricResponse)
-	switch in.Type {
-	case pb.Type_GAUGE:
-		mtype = metric.GaugeType
-	case pb.Type_COUNTER:
-		mtype = metric.CounterType
-	default:
-		response.Error = "unknown metric type"
-		log.Error(response.Error)
-		return response, fmt.Errorf(response.Error)
-	}
 
 	m, err := s.metrics.Get(ctx, in.Id, mtype)
 	if err != nil {
-		response.Error = err.Error()
-		log.Error(err.Error())
-		return response, err
+		return response, HandelErrMetric(err)
 	}
-
 	pbm, err := NewProtobufMetric(m)
 	if err != nil {
-		response.Error = err.Error()
-		log.Error(err.Error())
-		return response, err
+		return response, HandelErrMetric(err)
 	}
 	response.Metric = pbm
 	return response, nil
@@ -98,9 +74,7 @@ func (s *MetricServer) GetMany(ctx context.Context, _ *pb.GetManyMetricRequest) 
 	response := new(pb.GetManyMetricResponse)
 	metrics, err := s.metrics.GetMany(ctx)
 	if err != nil {
-		response.Error = err.Error()
-		log.Error(err.Error())
-		return response, err
+		return response, HandelErrMetric(err)
 	}
 
 	pbmetrics := make([]*pb.Metric, 0, len(metrics))
@@ -108,9 +82,7 @@ func (s *MetricServer) GetMany(ctx context.Context, _ *pb.GetManyMetricRequest) 
 		var pbm *pb.Metric
 		pbm, err = NewProtobufMetric(&i)
 		if err != nil {
-			response.Error = err.Error()
-			log.Error(err.Error())
-			return response, err
+			return response, HandelErrMetric(err)
 		}
 		pbmetrics = append(pbmetrics, pbm)
 	}
@@ -125,9 +97,25 @@ func (s *MetricServer) StorageCheck(ctx context.Context, _ *pb.StorageCheckMetri
 	response := new(pb.StorageCheckMetricResponse)
 	err := s.metrics.StorageCheck(ctx)
 	if err != nil {
-		response.Error = err.Error()
 		log.Error(err.Error())
-		return response, err
+		return response, status.Error(codes.Unavailable, err.Error())
 	}
 	return response, nil
+}
+
+func HandelErrMetric(err error) error {
+	log.Error(err.Error())
+
+	switch {
+	case errors.Is(err, domain.ErrInvalidMetricHash):
+		return status.Error(codes.InvalidArgument, err.Error())
+	case errors.Is(err, domain.ErrInvalidMetricType):
+		return status.Error(codes.InvalidArgument, err.Error())
+	case errors.Is(err, domain.ErrInvalidMetricValue):
+		return status.Error(codes.InvalidArgument, err.Error())
+	case errors.Is(err, domain.ErrMetricNotFound):
+		return status.Error(codes.NotFound, err.Error())
+	default:
+		return status.Error(codes.Unknown, err.Error())
+	}
 }
