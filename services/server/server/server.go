@@ -11,7 +11,7 @@ import (
 	"github.com/sreway/yametrics-v2/services/server/internal/delivery/http"
 
 	"github.com/sreway/yametrics-v2/services/server/config"
-	"github.com/sreway/yametrics-v2/services/server/internal/usecases/adapters/delivery"
+	"github.com/sreway/yametrics-v2/services/server/internal/delivery"
 	"github.com/sreway/yametrics-v2/services/server/internal/usecases/adapters/storage"
 	metricService "github.com/sreway/yametrics-v2/services/server/internal/usecases/metric"
 
