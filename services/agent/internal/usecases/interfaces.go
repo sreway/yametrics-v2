@@ -15,5 +15,6 @@ type Collector interface {
 }
 
 type Sender interface {
-	Send(ctx context.Context, endpoint string, m []metric.Metric) error
+	Send(ctx context.Context, m []metric.Metric) error
+	Close() error
 }

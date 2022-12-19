@@ -1,9 +1,11 @@
-package sender
+package http
 
 import (
 	"context"
 	"crypto/x509"
 	"errors"
+	"fmt"
+	"net"
 
 	"github.com/sreway/yametrics-v2/pkg/tools/pem"
 	"github.com/sreway/yametrics-v2/services/agent/config"
@@ -19,13 +21,13 @@ type UseCase struct {
 	http *httpclient.Client
 }
 
-func (uc *UseCase) Send(ctx context.Context, endpoint string, m []metric.Metric) error {
+func (uc *UseCase) Send(ctx context.Context, m []metric.Metric) error {
 	if len(m) == 0 {
 		log.Warn(ErrEmptyMetrics.Error())
 		return ErrEmptyMetrics
 	}
 
-	r, err := uc.http.R().SetContext(ctx).SetBody(&m).Post(endpoint)
+	r, err := uc.http.R().SetContext(ctx).SetBody(&m).Post("")
 	if err != nil {
 		return httpclient.NewErrHTTPClient(r.StatusCode(), err.Error())
 	}
@@ -39,7 +41,13 @@ func (uc *UseCase) Send(ctx context.Context, endpoint string, m []metric.Metric)
 }
 
 func New(cfg *config.Config) (*UseCase, error) {
-	url := cfg.ServerHTTPScheme + "://" + cfg.ServerAddress
+	url := cfg.ServerHTTPScheme + "://" + cfg.ServerAddress + cfg.MetricsEnpoint
+	ip := net.ParseIP(cfg.RealIP)
+
+	if ip == nil {
+		return nil, fmt.Errorf("RealIP is not ip address: %s", cfg.RealIP)
+	}
+
 	if cfg.ServerPublicKey != "" {
 		var certs []*x509.Certificate
 		pemData, err := pem.ParsePEM(cfg.ServerPublicKey)
@@ -56,11 +64,16 @@ func New(cfg *config.Config) (*UseCase, error) {
 		}
 
 		return &UseCase{
-			http: httpclient.New(httpclient.WithBaseURL(url), httpclient.WithCerts(certs...)),
+			http: httpclient.New(httpclient.WithBaseURL(url), httpclient.WithCerts(certs...),
+				httpclient.WithRealIP(ip)),
 		}, nil
 	}
 
 	return &UseCase{
-		http: httpclient.New(httpclient.WithBaseURL(url)),
+		http: httpclient.New(httpclient.WithBaseURL(url), httpclient.WithRealIP(ip)),
 	}, nil
+}
+
+func (uc *UseCase) Close() error {
+	return nil
 }

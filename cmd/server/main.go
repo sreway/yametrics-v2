@@ -22,6 +22,8 @@ func main() {
 	flag.StringVar(&config.DefaultConfigFile, "config", config.DefaultConfigFile,
 		"json configuration file")
 	flag.StringVar(&config.DefaultConfigFile, "c", config.DefaultConfigFile, "json configuration file")
+	flag.StringVar(&config.DefaultTrustedSubnet, "t", config.DefaultTrustedSubnet, "trusted subnet")
+	flag.BoolVar(&config.DefaultUseGRPC, "grpc", config.DefaultUseGRPC, "use grpc")
 	flag.Parse()
 
 	srv, err := server.New()

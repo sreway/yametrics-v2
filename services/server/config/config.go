@@ -27,24 +27,29 @@ var (
 		"text/plain",
 		"application/json",
 	}
-	DefaultConfigFile string
-	DefaultDSN        string
-	DefaultMigrateURL = "file://services/server/migrations"
+	DefaultConfigFile    string
+	DefaultDSN           string
+	DefaultMigrateURL    = "file://services/server/migrations"
+	DefaultTrustedSubnet string
+	DefaultUseGRPC       = false
 )
 
 type (
 	Config struct {
 		ConfigFile    string `env:"CONFIG"`
 		SecretKey     string
+		TrustedSubnet string              `json:"trusted_subnet" env:"TRUSTED_SUBNET"`
 		Postgres      PostgresConfig      `json:"postgres"`
 		MemoryStorage MemoryStorageConfig `json:"memory_storage"`
-		HTTP          HTTPConfig          `json:"http"`
+		Delivery      DeliveryConfig      `json:"delivery"`
+		UseGRPC       bool                `json:"use_grpc" env:"USE_GRPC"`
 	}
 
-	HTTPConfig struct {
+	DeliveryConfig struct {
+		TrustedSubnet *net.IPNet
 		Address       string `json:"address" env:"ADDRESS"`
 		CryptoKey     string `json:"crypto_key" env:"CRYPTO_KEY"`
-		CryptoCrt     string `json:"crypto_crt" env:"CRYPTO_CRT"`
+		CryptoCrt     string `json:"crypto_cert" env:"CRYPTO_CRT"`
 		CompressTypes []string
 		CompressLevel int
 	}
@@ -63,11 +68,12 @@ type (
 
 func New() (*Config, error) {
 	cfg := Config{}
-	cfg.HTTP.Address = DefaultAddress
-	cfg.HTTP.CompressLevel = DefaultCompressLevel
-	cfg.HTTP.CompressTypes = DefaultCompressTypes
-	cfg.HTTP.CryptoKey = DefaultCryptoKey
-	cfg.HTTP.CryptoCrt = DefaultCryptoCrt
+	cfg.Delivery.Address = DefaultAddress
+	cfg.Delivery.CompressLevel = DefaultCompressLevel
+	cfg.Delivery.CompressTypes = DefaultCompressTypes
+	cfg.Delivery.CryptoKey = DefaultCryptoKey
+	cfg.Delivery.CryptoCrt = DefaultCryptoCrt
+	cfg.TrustedSubnet = DefaultTrustedSubnet
 	cfg.MemoryStorage.StoreInterval = DefaultStoreInterval
 	cfg.MemoryStorage.Restore = DefaultRestore
 	cfg.MemoryStorage.StoreFile = DefaultStoreFile
@@ -75,6 +81,7 @@ func New() (*Config, error) {
 	cfg.Postgres.MigrateURL = DefaultMigrateURL
 	cfg.SecretKey = DefaultKey
 	cfg.ConfigFile = DefaultConfigFile
+	cfg.UseGRPC = DefaultUseGRPC
 
 	if cfg.ConfigFile != "" {
 		f, err := os.Open(cfg.ConfigFile)
@@ -86,21 +93,27 @@ func New() (*Config, error) {
 		if err = json.NewDecoder(f).Decode(&cfg); err != nil {
 			return nil, NewConfigError(err)
 		}
-
 		log.Info("success load json config")
 	}
+
 	if err := env.Parse(&cfg); err != nil {
 		return nil, NewConfigError(err)
 	}
 
-	_, port, err := net.SplitHostPort(cfg.HTTP.Address)
+	_, port, err := net.SplitHostPort(cfg.Delivery.Address)
 	if err != nil {
-		return nil, NewConfigError(fmt.Errorf("invalid address %s", cfg.HTTP.Address))
+		return nil, NewConfigError(fmt.Errorf("invalid address %s", cfg.Delivery.Address))
 	}
 
 	_, err = strconv.Atoi(port)
 	if err != nil {
 		return nil, NewConfigError(fmt.Errorf("invalid port %s", port))
+	}
+
+	if cfg.TrustedSubnet != "" {
+		if _, cfg.Delivery.TrustedSubnet, err = net.ParseCIDR(cfg.TrustedSubnet); err != nil {
+			return nil, NewConfigError(fmt.Errorf("incorrect trusted subnet %s", cfg.TrustedSubnet))
+		}
 	}
 	return &cfg, nil
 }

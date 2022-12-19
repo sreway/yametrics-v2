@@ -20,15 +20,15 @@ type Delivery struct {
 	router  *chi.Mux
 }
 
-func New(uc usecases.Metric, cfg *config.HTTPConfig) *Delivery {
+func New(uc usecases.Metric, cfg *config.DeliveryConfig) (*Delivery, error) {
 	d := &Delivery{
 		metrics: uc,
 	}
 	d.router = d.initRouter(cfg)
-	return d
+	return d, nil
 }
 
-func (d *Delivery) Run(ctx context.Context, cfg *config.HTTPConfig) error {
+func (d *Delivery) Run(ctx context.Context, cfg *config.DeliveryConfig) error {
 	serverCtx, stopServer := context.WithCancel(context.Background())
 	httpServer := httpserver.New(d.router, httpserver.Addr(cfg.Address))
 

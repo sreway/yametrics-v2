@@ -20,7 +20,7 @@ func WithAddr(address string) OptionServer {
 			return NewConfigError(fmt.Errorf("invalid port %s", port))
 		}
 
-		cfg.HTTP.Address = address
+		cfg.Delivery.Address = address
 		return nil
 	}
 }

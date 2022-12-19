@@ -73,11 +73,10 @@ func (uc *UseCase) GetMany(ctx context.Context) ([]metric.Metric, error) {
 	})
 
 	if uc.secretKey != "" {
-		for _, item := range metrics {
-			item.Hash = item.CalcHash(uc.secretKey)
+		for idx, item := range metrics {
+			metrics[idx].Hash = item.CalcHash(uc.secretKey)
 		}
 	}
-
 	return metrics, nil
 }
 

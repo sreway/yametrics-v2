@@ -6,7 +6,7 @@ import (
 	"github.com/sreway/yametrics-v2/services/server/config"
 )
 
-func (d *Delivery) initRouter(cfg *config.HTTPConfig) *chi.Mux {
+func (d *Delivery) initRouter(cfg *config.DeliveryConfig) *chi.Mux {
 	router := chi.NewRouter()
 	d.useMiddleware(cfg, router)
 
